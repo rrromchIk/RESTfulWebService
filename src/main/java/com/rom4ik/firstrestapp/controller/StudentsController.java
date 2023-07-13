@@ -1,11 +1,16 @@
 package com.rom4ik.firstrestapp.controller;
 
 import com.rom4ik.firstrestapp.dao.StudentDAO;
+import com.rom4ik.firstrestapp.exception.StudentCRUDException;
+import com.rom4ik.firstrestapp.exception.StudentNotFoundException;
 import com.rom4ik.firstrestapp.model.Student;
-import com.rom4ik.firstrestapp.util.*;
+import com.rom4ik.firstrestapp.response.StudentErrorResponse;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,8 +40,11 @@ public class StudentsController {
     }
 
     @PostMapping("/students")
-    public ResponseEntity<HttpStatus> createStudent(@RequestBody Student student) {
-        System.out.println("students:post");
+    public ResponseEntity<HttpStatus> createStudent(@RequestBody @Valid Student student,
+                                                    BindingResult bindingResult) {
+        if(bindingResult.hasErrors()) {
+            throw new StudentCRUDException(getErrorMessages(bindingResult));
+        }
         studentDAO.create(student);
         return ResponseEntity.ok(HttpStatus.OK);
     }
@@ -48,9 +56,12 @@ public class StudentsController {
     }
 
     @PatchMapping("/students/{id}")
-    public ResponseEntity<HttpStatus> updateStudent(@RequestBody Student student,
+    public ResponseEntity<HttpStatus> updateStudent(@RequestBody @Valid Student student,
+                                                    BindingResult bindingResult,
                                                     @PathVariable int id) {
-        System.out.println(student);
+        if(bindingResult.hasErrors()) {
+            throw new StudentCRUDException(getErrorMessages(bindingResult));
+        }
         studentDAO.update(student, id);
         return ResponseEntity.ok(HttpStatus.OK);
     }
@@ -64,26 +75,20 @@ public class StudentsController {
     }
 
     @ExceptionHandler
-    private ResponseEntity<StudentErrorResponse> handleException(StudentCreationException exc) {
+    private ResponseEntity<StudentErrorResponse> handleException(StudentCRUDException exc) {
         StudentErrorResponse studentErrorResponse = new StudentErrorResponse(
-                "Error while creating student"
+                exc.getMessage()
         );
         return new ResponseEntity<>(studentErrorResponse, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
-    @ExceptionHandler
-    private ResponseEntity<StudentErrorResponse> handleException(StudentUpdateException exc) {
-        StudentErrorResponse studentErrorResponse = new StudentErrorResponse(
-                "Error while updating student"
-        );
-        return new ResponseEntity<>(studentErrorResponse, HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler
-    private ResponseEntity<StudentErrorResponse> handleException(StudentDeleteException exc) {
-        StudentErrorResponse studentErrorResponse = new StudentErrorResponse(
-                "Error while deleting student"
-        );
-        return new ResponseEntity<>(studentErrorResponse, HttpStatus.BAD_REQUEST);
+    private String getErrorMessages(BindingResult bindingResult) {
+        StringBuilder errMsg = new StringBuilder();
+        List<FieldError> errors = bindingResult.getFieldErrors();
+        for(FieldError fieldError : errors) {
+            errMsg.append(fieldError.getField())
+                    .append(" - ").append(fieldError.getDefaultMessage()).append(";");
+        }
+        return errMsg.toString();
     }
 }

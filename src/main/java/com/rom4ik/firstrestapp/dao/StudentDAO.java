@@ -1,10 +1,8 @@
 package com.rom4ik.firstrestapp.dao;
 
 import com.rom4ik.firstrestapp.model.Student;
-import com.rom4ik.firstrestapp.util.StudentCreationException;
-import com.rom4ik.firstrestapp.util.StudentDeleteException;
-import com.rom4ik.firstrestapp.util.StudentNotFoundException;
-import com.rom4ik.firstrestapp.util.StudentUpdateException;
+import com.rom4ik.firstrestapp.exception.StudentCRUDException;
+import com.rom4ik.firstrestapp.exception.StudentNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -39,7 +37,7 @@ public class StudentDAO {
                 student.getGroup(), student.getFirstName(), student.getLastName(), student.getBirthday(), student.getGender());
 
         if(result <= 0) {
-            throw new StudentCreationException();
+            throw new StudentCRUDException("Error while creating student");
         }
     }
 
@@ -54,7 +52,7 @@ public class StudentDAO {
                 id);
 
         if(result <= 0) {
-            throw new StudentUpdateException();
+            throw new StudentCRUDException("Error while updating student");
         }
     }
 
@@ -62,7 +60,7 @@ public class StudentDAO {
         int result = jdbcTemplate.update("DELETE FROM student WHERE id = ?", id);
 
         if(result <= 0) {
-            throw new StudentDeleteException();
+            throw new StudentCRUDException("Error while deleting student");
         }
     }
 }

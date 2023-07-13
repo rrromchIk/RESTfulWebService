@@ -1,4 +1,4 @@
-package com.rom4ik.firstrestapp.util;
+package com.rom4ik.firstrestapp.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
