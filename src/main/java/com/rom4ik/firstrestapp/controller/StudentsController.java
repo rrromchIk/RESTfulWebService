@@ -1,11 +1,13 @@
 package com.rom4ik.firstrestapp.controller;
 
 import com.rom4ik.firstrestapp.dao.StudentDAO;
+import com.rom4ik.firstrestapp.dto.StudentDTO;
 import com.rom4ik.firstrestapp.exception.StudentCRUDException;
 import com.rom4ik.firstrestapp.exception.StudentNotFoundException;
 import com.rom4ik.firstrestapp.model.Student;
 import com.rom4ik.firstrestapp.response.StudentErrorResponse;
 import jakarta.validation.Valid;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,10 +25,12 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class StudentsController {
     private final StudentDAO studentDAO;
+    private final ModelMapper modelMapper;
 
     @Autowired
-    public StudentsController(StudentDAO studentDAO) {
+    public StudentsController(StudentDAO studentDAO, ModelMapper modelMapper) {
         this.studentDAO = studentDAO;
+        this.modelMapper = modelMapper;
     }
 
     @GetMapping("/students")
@@ -40,12 +44,12 @@ public class StudentsController {
     }
 
     @PostMapping("/students")
-    public ResponseEntity<HttpStatus> createStudent(@RequestBody @Valid Student student,
+    public ResponseEntity<HttpStatus> createStudent(@RequestBody @Valid StudentDTO studentDTO,
                                                     BindingResult bindingResult) {
         if(bindingResult.hasErrors()) {
             throw new StudentCRUDException(getErrorMessages(bindingResult));
         }
-        studentDAO.create(student);
+        studentDAO.create(convertToEntity(studentDTO));
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
@@ -56,13 +60,13 @@ public class StudentsController {
     }
 
     @PatchMapping("/students/{id}")
-    public ResponseEntity<HttpStatus> updateStudent(@RequestBody @Valid Student student,
+    public ResponseEntity<HttpStatus> updateStudent(@RequestBody @Valid StudentDTO studentDTO,
                                                     BindingResult bindingResult,
                                                     @PathVariable int id) {
         if(bindingResult.hasErrors()) {
             throw new StudentCRUDException(getErrorMessages(bindingResult));
         }
-        studentDAO.update(student, id);
+        studentDAO.update(convertToEntity(studentDTO), id);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
@@ -90,5 +94,9 @@ public class StudentsController {
                     .append(" - ").append(fieldError.getDefaultMessage()).append(";");
         }
         return errMsg.toString();
+    }
+
+    private Student convertToEntity(StudentDTO studentDTO) {
+        return modelMapper.map(studentDTO, Student.class);
     }
 }
