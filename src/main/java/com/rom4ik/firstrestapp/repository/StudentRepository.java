@@ -1,24 +1,26 @@
-package com.rom4ik.firstrestapp.dao;
+package com.rom4ik.firstrestapp.repository;
 
 import com.rom4ik.firstrestapp.model.Student;
 import com.rom4ik.firstrestapp.exception.StudentCRUDException;
 import com.rom4ik.firstrestapp.exception.StudentNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 /**
  * @author rom4ik
  */
-@Component
-public class StudentDAO {
-    private final JdbcTemplate jdbcTemplate;
+@Repository
+public interface StudentRepository extends JpaRepository<Student, Integer> {
+    /*private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public StudentDAO(JdbcTemplate jdbcTemplate) {
+    public StudentRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -62,5 +64,5 @@ public class StudentDAO {
         if(result <= 0) {
             throw new StudentCRUDException("Error while deleting student");
         }
-    }
+    }*/
 }

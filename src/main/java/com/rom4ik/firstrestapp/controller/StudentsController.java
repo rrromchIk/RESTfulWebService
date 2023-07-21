@@ -1,11 +1,12 @@
 package com.rom4ik.firstrestapp.controller;
 
-import com.rom4ik.firstrestapp.dao.StudentDAO;
+import com.rom4ik.firstrestapp.repository.StudentRepository;
 import com.rom4ik.firstrestapp.dto.StudentDTO;
 import com.rom4ik.firstrestapp.exception.StudentCRUDException;
 import com.rom4ik.firstrestapp.exception.StudentNotFoundException;
 import com.rom4ik.firstrestapp.model.Student;
 import com.rom4ik.firstrestapp.response.StudentErrorResponse;
+import com.rom4ik.firstrestapp.service.StudentService;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,23 +25,23 @@ import java.util.List;
 @RequestMapping("/api")
 @CrossOrigin(origins = "*")
 public class StudentsController {
-    private final StudentDAO studentDAO;
+    private final StudentService studentService;
     private final ModelMapper modelMapper;
 
     @Autowired
-    public StudentsController(StudentDAO studentDAO, ModelMapper modelMapper) {
-        this.studentDAO = studentDAO;
+    public StudentsController(StudentService studentService, ModelMapper modelMapper) {
+        this.studentService = studentService;
         this.modelMapper = modelMapper;
     }
 
     @GetMapping("/students")
     public List<Student> getAll() {
-        return studentDAO.findAll();
+        return studentService.findAll();
     }
 
     @GetMapping("/students/{id}")
     public Student getById(@PathVariable int id) {
-        return studentDAO.findById(id);
+        return studentService.findById(id);
     }
 
     @PostMapping("/students")
@@ -49,13 +50,13 @@ public class StudentsController {
         if(bindingResult.hasErrors()) {
             throw new StudentCRUDException(getErrorMessages(bindingResult));
         }
-        studentDAO.create(convertToEntity(studentDTO));
+        studentService.create(convertToEntity(studentDTO));
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
     @DeleteMapping("/students/{id}")
     public ResponseEntity<HttpStatus> deleteStudent(@PathVariable int id) {
-        studentDAO.delete(id);
+        studentService.delete(id);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
@@ -66,7 +67,7 @@ public class StudentsController {
         if(bindingResult.hasErrors()) {
             throw new StudentCRUDException(getErrorMessages(bindingResult));
         }
-        studentDAO.update(convertToEntity(studentDTO), id);
+        studentService.update(convertToEntity(studentDTO), id);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
